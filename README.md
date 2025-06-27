@@ -55,7 +55,7 @@ I have started writing VHDL code for the following modules. Each component inclu
   * `NPC_out`    : Next PC to ID
   * `Valid_out`  : Validity to ID
 
-### 3. InstructionDecoder
+### 3. [InstructionDecoder](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/Superscalar.vhd)
 
 * **Purpose**: Parses a 32-bit instruction into fields and sign-extended immediates for all RV32I formats.
 * **Inputs**:
