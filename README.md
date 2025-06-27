@@ -10,7 +10,7 @@ This project aims at implementing my understanding of key processor architecture
 * **Out-of-Order Execution**: Dynamically scheduling independent instructions around hazards to minimize stalls and improve performance.
 * **Branch Handling**: Detecting, predicting, and flushing or redirecting the pipeline on control hazards to maintain correct program flow.
 
-## Implemented VHDL Components
+## [Implemented VHDL Components](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/InstructionDecoder.vhd)
 
 I have started writing VHDL code for the following modules. Each component includes its interface and a brief description of its functionality.
 
