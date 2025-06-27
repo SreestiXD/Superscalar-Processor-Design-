@@ -34,7 +34,7 @@ I have started writing VHDL code for the following modules. Each component inclu
   * `Fetch_Valid`: Indicates fetched instructions are valid
   * `PC_out`     : Current PC value (for tracing)
 
-### 2. IF\_ID\_Register
+### 2. [IF\_ID\_Register](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/IF_ID_pipeline_reg.vhd)
 
 * **Purpose**: Pipeline register between IF and ID stages, holding fetched instructions and PC values.
 * **Inputs**:
