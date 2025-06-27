@@ -45,14 +45,16 @@ I have started writing VHDL code for the following modules. Each component inclu
   * `Instr1_in`  : Instruction 1 from IF
   * `Instr2_in`  : Instruction 2 from IF
   * `PC_in`      : Current PC (7 bits)
-  * `NPC_in`     : Next PC (7 bits)
+  * `PC_plus4_in`     : Next PC (7 bits)
+  * `PC_plus8_in`     : Next PC + 4 (7 bits)
   * `Valid_in`   : Fetch validity
 * **Outputs**:
 
   * `Instr1_out` : Instruction 1 to ID
   * `Instr2_out` : Instruction 2 to ID
   * `PC_out`     : PC to ID
-  * `NPC_out`    : Next PC to ID
+  * `PC_plus4_out`     : Next PC (7 bits) to ID 
+  * `PC_plus8_out`     : Next PC + 4 (7 bits) to ID
   * `Valid_out`  : Validity to ID
 
 ### 3. [InstructionDecoder](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/Superscalar.vhd)
