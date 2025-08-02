@@ -35,16 +35,16 @@ This repository contains a structural, dual-issue, in-order superscalar processo
 | [**IF_ID Pipeline Register**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/IF_ID_pipeline_reg.vhd) | Stores fetched instructions, PCs, and valid bits to be passed into the decode stage. |
 | [**InstructionDecoder**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/InstructionDecoder.vhd) | Extracts opcode, rd, rs1, rs2, funct3, funct7, and decodes all relevant immediates (I, S, B, U, J). |
 | [**ControlUnit**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/ControlUnit.vhd)       | For each instruction, generates ALU operation, jump flags, memory control, and source select signals. |
-| **InstructionBundler** | Combines decoded fields and control signals into a structured `InstructionBundle` for downstream pipeline use. |
-| **FIFOqueue**         | Buffers bundled instructions until the scheduler can issue them. Supports one/two instruction entry/exit per cycle. |
-| **Schedular**         | Selects ready instructions from FIFO based on register availability using the scoreboard. Issues up to two per cycle. |
-| **Scoreboard**        | Tracks busy/available status of each register. Set by scheduler, cleared on write-back. Prevents RAW hazards. |
-| **RegisterFile**      | 32-register file with 2 read ports (for dual issue) and 1 write port. Supports simultaneous reads for both instructions. |
-| **Mux2x1_32bit**      | Selects between `rs1` value and PC for ALU input 1 (used in jumps and AUIPC). |
-| **Mux6x1_32bit**      | Selects between multiple immediate types or `rs2` for ALU input 2, based on instruction type. |
-| **ALU**               | Performs arithmetic, logical, and comparison operations. Result and zero flag used for further control (e.g., branches). |
-| **EX_MEM Register**   | Stores ALU results and instruction bundles to be passed to the MEM stage. |
-| **DataMemory**        | Word-addressed memory (4KB). Shared between both instructions with priority logic to avoid write conflicts. |
-| **Mux2x1_32bit (WB)** | Selects between ALU result and DataMemory output for final write-back value. |
-| **MEM_WB Register**   | Captures final result and bundle per instruction before writing back to the register file. |
-| **WriteBackMux**      | Chooses which instruction writes back to the register file (issue 0 prioritized) when only one write port is available. |
+| [**InstructionBundler**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/InstructionBundler.vhd) | Combines decoded fields and control signals into a structured `InstructionBundle` for downstream pipeline use. |
+| [**FIFOqueue**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/FIFOqueue.vhd)         | Buffers bundled instructions until the scheduler can issue them. Supports one/two instruction entry/exit per cycle. |
+| [**Schedular**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/Schedular.vhd)         | Selects ready instructions from FIFO based on register availability using the scoreboard. Issues up to two per cycle. |
+| [**Scoreboard**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/Scoreboard.vhd)        | Tracks busy/available status of each register. Set by scheduler, cleared on write-back. Prevents RAW hazards. |
+| [**RegisterFile**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/RegisterFile.vhd)      | 32-register file with 2 read ports (for dual issue) and 1 write port. Supports simultaneous reads for both instructions. |
+| [**Mux2x1_32bit**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/2x1mux_32bit.vhd)      | Selects between `rs1` value and PC for ALU input 1 (used in jumps and AUIPC). |
+| [**Mux6x1_32bit**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/Mux6x1_32bit.vhd)      | Selects between multiple immediate types or `rs2` for ALU input 2, based on instruction type. |
+| [**ALU**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/ALU.vhd)               | Performs arithmetic, logical, and comparison operations. Result and zero flag used for further control (e.g., branches). |
+| [**EX_MEM Register**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/EX_MEM_Register.vhd)   | Stores ALU results and instruction bundles to be passed to the MEM stage. |
+| [**DataMemory**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/DataMemory.vhd)        | Word-addressed memory (4KB). Shared between both instructions with priority logic to avoid write conflicts. |
+| [**Mux2x1_32bit (WB)**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/2x1mux_32bit.vhd) | Selects between ALU result and DataMemory output for final write-back value. |
+| [**MEM_WB Register**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/MEM_WB_Register.vhd)   | Captures final result and bundle per instruction before writing back to the register file. |
+| [**WriteBackMux**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/WriteBackMux.vhd)      | Chooses which instruction writes back to the register file (issue 0 prioritized) when only one write port is available. |
