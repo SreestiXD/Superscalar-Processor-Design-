@@ -10,74 +10,41 @@ This project aims at implementing my understanding of key processor architecture
 * **Out-of-Order Execution**: Dynamically scheduling independent instructions around hazards to minimize stalls and improve performance.
 * **Branch Handling**: Detecting, predicting, and flushing or redirecting the pipeline on control hazards to maintain correct program flow.
 
-## Implemented VHDL Components
+This repository contains a structural, dual-issue, in-order superscalar processor designed in VHDL, implementing the RV32I RISC-V ISA. The processor is built from the ground up using modular components and simulates pipelined execution from fetch to write-back.
 
-I have started writing VHDL code for the following modules. Each component includes its interface and a brief description of its functionality.
+---
 
-### 1. [InstructionFetch](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/InstructionDecoder.vhd)
+## Features
 
-* **Purpose**: Fetches two 32-bit RV32I instructions per cycle and updates the program counter (PC).
-* **Inputs**:
+- **Dual-Issue Superscalar Execution**: The processor fetches, decodes, and executes two instructions per cycle while maintaining strict **in-order** semantics.
+- **Fully Structural Design**: No behavioral processes in the top-level — every module is instantiated and wired explicitly.
+- **Instruction Bundling**: All control and data signals are encapsulated per instruction into structured `InstructionBundle` records.
+- **Intelligent Scheduling**: A combination of **FIFO**, **scheduler**, and **scoreboard** ensures only data-ready instructions proceed to execution.
+- **Register File with 2R1W**: A single register file supports two simultaneous reads and one write per cycle.
+- **Pipelined Execution**: IF → ID → EX → MEM → WB
+- **RV32I ISA Support**: Implements arithmetic, immediate, memory, and control flow instructions from RV32I 
+- **Simulation-Ready**: Outputs from the final MEM/WB stage can be probed for testing and verification.
 
-  * `clk`        : Clock signal
-  * `reset`      : Asynchronous reset
-  * `BranchTaken`: Indicates a taken branch
-  * `BranchTarget`: New PC on branch
-  * `Stall`      : Pipeline stall signal
-  * `Flush`      : Control hazard flush signal
-* **Outputs**:
+---
 
-  * `Instr1`     : First fetched instruction (32 bits)
-  * `Instr2`     : Second fetched instruction (32 bits)
-  * `PC_plus4`   : PC + 4 (next instruction address)
-  * `PC_plus8`   : PC + 8 (address for following cycle)
-  * `Fetch_Valid`: Indicates fetched instructions are valid
-  * `PC_out`     : Current PC value (for tracing)
+## Component Descriptions
 
-### 2. [IF\_ID\_Register](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/IF_ID_pipeline_reg.vhd)
-
-* **Purpose**: Pipeline register between IF and ID stages, holding fetched instructions and PC values.
-* **Inputs**:
-
-  * `clk`        : Clock signal
-  * `Stall`      : Hold register contents when asserted
-  * `Flush`      : Inject bubble (NOPs) when asserted
-  * `Instr1_in`  : Instruction 1 from IF
-  * `Instr2_in`  : Instruction 2 from IF
-  * `PC_in`      : Current PC (7 bits)
-  * `PC_plus4_in`     : Next PC (7 bits)
-  * `PC_plus8_in`     : Next PC + 4 (7 bits)
-  * `Valid_in`   : Fetch validity
-* **Outputs**:
-
-  * `Instr1_out` : Instruction 1 to ID
-  * `Instr2_out` : Instruction 2 to ID
-  * `PC_out`     : PC to ID
-  * `PC_plus4_out`     : Next PC (7 bits) to ID 
-  * `PC_plus8_out`     : Next PC + 4 (7 bits) to ID
-  * `Valid_out`  : Validity to ID
-
-### 3. [InstructionDecoder](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/Superscalar.vhd)
-
-* **Purpose**: Parses a 32-bit instruction into fields and sign-extended immediates for all RV32I formats.
-* **Inputs**:
-
-  * `instruction`: Raw 32-bit instruction word
-* **Outputs**:
-
-  * `opcode`     : Bits \[6:0]
-  * `rd`         : Destination register \[11:7]
-  * `funct3`     : Function code \[14:12]
-  * `rs1`        : Source register 1 \[19:15]
-  * `rs2`        : Source register 2 \[24:20]
-  * `funct7`     : Function code \[31:25]
-  * `imm_I`      : Sign-extended I-type immediate
-  * `imm_S`      : Sign-extended S-type immediate
-  * `imm_B`      : Sign-extended B-type immediate
-  * `imm_U`      : U-type immediate (lower 12 bits zero)
-  * `imm_J`      : Sign-extended J-type immediate
-  * `shamt`      : Shift amount \[24:20]
-
-## Work in Progress
-
-Development of downstream pipeline stages (ID/EX, EX/MEM, MEM/WB) and branch-prediction mechanisms is ongoing.
+| Component             | Description |
+|-----------------------|-------------|
+| **InstructionFetch**  | Fetches two 32-bit instructions per cycle from instruction memory (ROM-based). Computes `PC+4`, `PC+8`, and handles jump/branch redirection. |
+| **IF_ID Pipeline Register** | Stores fetched instructions, PCs, and valid bits to be passed into the decode stage. |
+| **InstructionDecoder** | Extracts opcode, rd, rs1, rs2, funct3, funct7, and decodes all relevant immediates (I, S, B, U, J). |
+| **ControlUnit**       | For each instruction, generates ALU operation, jump flags, memory control, and source select signals. |
+| **InstructionBundler** | Combines decoded fields and control signals into a structured `InstructionBundle` for downstream pipeline use. |
+| **FIFOqueue**         | Buffers bundled instructions until the scheduler can issue them. Supports one/two instruction entry/exit per cycle. |
+| **Schedular**         | Selects ready instructions from FIFO based on register availability using the scoreboard. Issues up to two per cycle. |
+| **Scoreboard**        | Tracks busy/available status of each register. Set by scheduler, cleared on write-back. Prevents RAW hazards. |
+| **RegisterFile**      | 32-register file with 2 read ports (for dual issue) and 1 write port. Supports simultaneous reads for both instructions. |
+| **Mux2x1_32bit**      | Selects between `rs1` value and PC for ALU input 1 (used in jumps and AUIPC). |
+| **Mux6x1_32bit**      | Selects between multiple immediate types or `rs2` for ALU input 2, based on instruction type. |
+| **ALU**               | Performs arithmetic, logical, and comparison operations. Result and zero flag used for further control (e.g., branches). |
+| **EX_MEM Register**   | Stores ALU results and instruction bundles to be passed to the MEM stage. |
+| **DataMemory**        | Word-addressed memory (4KB). Shared between both instructions with priority logic to avoid write conflicts. |
+| **Mux2x1_32bit (WB)** | Selects between ALU result and DataMemory output for final write-back value. |
+| **MEM_WB Register**   | Captures final result and bundle per instruction before writing back to the register file. |
+| **WriteBackMux**      | Chooses which instruction writes back to the register file (issue 0 prioritized) when only one write port is available. |
