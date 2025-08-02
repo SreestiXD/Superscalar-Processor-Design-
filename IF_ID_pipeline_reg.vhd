@@ -6,19 +6,18 @@ entity IF_ID_pipeline_reg is
     clk         : in  std_logic;
     Stall       : in  std_logic;    -- when '1', hold current state
     Flush       : in  std_logic;    -- when '1', inject a bubble
+	 Jump 		 : in  std_logic;
     -- Inputs from IF stage
     Instr1_in   : in  std_logic_vector(31 downto 0);
     Instr2_in   : in  std_logic_vector(31 downto 0);
-    PC_in       : in  std_logic_vector(6 downto 0);  
-    PC_plus4_in : in  std_logic_vector(6 downto 0); 
-	 PC_plus8_in : in  std_logic_vector(6 downto 0); 
+    PC_in       : in  std_logic_vector(31 downto 0); -- PC of instr 1 
+    PC_plus4_in : in  std_logic_vector(31 downto 0); -- PC of instr 2
     Valid_in    : in  std_logic;
     -- Outputs to ID stage
     Instr1_out  : out std_logic_vector(31 downto 0);
     Instr2_out  : out std_logic_vector(31 downto 0);
-    PC_out      : out std_logic_vector(6 downto 0);
-    PC_plus4_out: out std_logic_vector(6 downto 0);
-    PC_plus8_out: out std_logic_vector(6 downto 0);
+    PC_out      : out std_logic_vector(31 downto 0);
+    PC_plus4_out: out std_logic_vector(31 downto 0);
     Valid_out   : out std_logic
   );
 end IF_ID_pipeline_reg;
@@ -26,9 +25,8 @@ end IF_ID_pipeline_reg;
 architecture RTL of IF_ID_pipeline_reg is
   signal r_Instr1 : std_logic_vector(31 downto 0);
   signal r_Instr2 : std_logic_vector(31 downto 0);
-  signal r_PC     : std_logic_vector(6 downto 0);
-  signal r_PC_plus4    : std_logic_vector(6 downto 0);
-  signal r_PC_plus8    : std_logic_vector(6 downto 0);
+  signal r_PC     : std_logic_vector(31 downto 0);
+  signal r_PC_plus4    : std_logic_vector(31 downto 0);
   signal r_Valid  : std_logic;
 begin
   process(clk)
@@ -40,15 +38,13 @@ begin
         r_Instr2 <= r_Instr2;
         r_PC     <= r_PC;
         r_PC_plus4    <= r_PC_plus4;
-        r_PC_plus8    <= r_PC_plus8;
         r_Valid  <= r_Valid;
-      elsif Flush = '1' then
+      elsif Flush = '1' or valid_in = '0'or Jump = '1' then
         -- inject bubble (NOPs)
         r_Instr1 <= (others => '0');
         r_Instr2 <= (others => '0');
         r_PC     <= (others => '0');
         r_PC_plus4    <= (others => '0');
-        r_PC_plus8    <= (others => '0');
 		  r_Valid  <= '0';
       else
         -- normal 
@@ -56,7 +52,6 @@ begin
         r_Instr2 <= Instr2_in;
         r_PC     <= PC_in;
         r_PC_plus4    <= PC_plus4_in;
-        r_PC_plus8    <= PC_plus8_in;
         r_Valid  <= Valid_in;
       end if;
     end if;
@@ -66,7 +61,7 @@ begin
   Instr1_out <= r_Instr1;
   Instr2_out <= r_Instr2;
   PC_out     <= r_PC;
-  NPC_out    <= r_NPC;
+  PC_plus4_out    <= r_PC_plus4;
   Valid_out  <= r_Valid;
 
 end RTL;
