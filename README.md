@@ -31,10 +31,10 @@ This repository contains a structural, dual-issue, in-order superscalar processo
 
 | Component             | Description |
 |-----------------------|-------------|
-| [**InstructionFetch**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/Superscalar.vhd) | Fetches two 32-bit instructions per cycle from instruction memory (ROM-based). Computes `PC+4`, `PC+8`, and handles jump/branch redirection. |
-| **IF_ID Pipeline Register** | Stores fetched instructions, PCs, and valid bits to be passed into the decode stage. |
-| **InstructionDecoder** | Extracts opcode, rd, rs1, rs2, funct3, funct7, and decodes all relevant immediates (I, S, B, U, J). |
-| **ControlUnit**       | For each instruction, generates ALU operation, jump flags, memory control, and source select signals. |
+| [**InstructionFetch**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/Superscalar.vhd)  | Fetches two 32-bit instructions per cycle from instruction memory (ROM-based). Computes `PC+4`, `PC+8`, and handles jump/branch redirection. |
+| [**IF_ID Pipeline Register**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/IF_ID_pipeline_reg.vhd) | Stores fetched instructions, PCs, and valid bits to be passed into the decode stage. |
+| [**InstructionDecoder**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/InstructionDecoder.vhd) | Extracts opcode, rd, rs1, rs2, funct3, funct7, and decodes all relevant immediates (I, S, B, U, J). |
+| [**ControlUnit**](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/ControlUnit.vhd)       | For each instruction, generates ALU operation, jump flags, memory control, and source select signals. |
 | **InstructionBundler** | Combines decoded fields and control signals into a structured `InstructionBundle` for downstream pipeline use. |
 | **FIFOqueue**         | Buffers bundled instructions until the scheduler can issue them. Supports one/two instruction entry/exit per cycle. |
 | **Schedular**         | Selects ready instructions from FIFO based on register availability using the scoreboard. Issues up to two per cycle. |
