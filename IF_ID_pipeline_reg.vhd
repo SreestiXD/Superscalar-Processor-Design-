@@ -1,67 +1,74 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
-entity IF_ID_pipeline_reg is
-  port (
-    clk         : in  std_logic;
-    Stall       : in  std_logic;    -- when '1', hold current state
-    Flush       : in  std_logic;    -- when '1', inject a bubble
-	 Jump 		 : in  std_logic;
-    -- Inputs from IF stage
-    Instr1_in   : in  std_logic_vector(31 downto 0);
-    Instr2_in   : in  std_logic_vector(31 downto 0);
-    PC_in       : in  std_logic_vector(31 downto 0); -- PC of instr 1 
-    PC_plus4_in : in  std_logic_vector(31 downto 0); -- PC of instr 2
-    Valid_in    : in  std_logic;
-    -- Outputs to ID stage
-    Instr1_out  : out std_logic_vector(31 downto 0);
-    Instr2_out  : out std_logic_vector(31 downto 0);
+entity InstructionDecoder is
+  port(
+    instruction : in  std_logic_vector(31 downto 0);
+    PC_in       : in  std_logic_vector(31 downto 0);
+    valid_in    : in  std_logic;
+	 
+    opcode      : out std_logic_vector(6 downto 0);
+    rd          : out std_logic_vector(4 downto 0);
+    funct3      : out std_logic_vector(2 downto 0);
+    rs1         : out std_logic_vector(4 downto 0);
+    rs2         : out std_logic_vector(4 downto 0);
+    funct7      : out std_logic_vector(6 downto 0);
     PC_out      : out std_logic_vector(31 downto 0);
-    PC_plus4_out: out std_logic_vector(31 downto 0);
-    Valid_out   : out std_logic
+    valid_out   : out std_logic;
+    -- Sign-extended immediates
+    imm_I       : out std_logic_vector(31 downto 0);
+    imm_S       : out std_logic_vector(31 downto 0);
+    imm_B       : out std_logic_vector(31 downto 0);
+    imm_U       : out std_logic_vector(31 downto 0);
+    imm_J       : out std_logic_vector(31 downto 0);
+    -- Shift amount for I-type shifts
+    shamt       : out std_logic_vector(4 downto 0)
   );
-end IF_ID_pipeline_reg;
+end InstructionDecoder;
 
-architecture RTL of IF_ID_pipeline_reg is
-  signal r_Instr1 : std_logic_vector(31 downto 0);
-  signal r_Instr2 : std_logic_vector(31 downto 0);
-  signal r_PC     : std_logic_vector(31 downto 0);
-  signal r_PC_plus4    : std_logic_vector(31 downto 0);
-  signal r_Valid  : std_logic;
-begin
-  process(clk)
+architecture Behavioral of InstructionDecoder is
+  function signext(input : signed; size : natural) return signed is
   begin
-    if rising_edge(clk) then
-      if Stall = '1' then
-        -- hold previous values
-        r_Instr1 <= r_Instr1;
-        r_Instr2 <= r_Instr2;
-        r_PC     <= r_PC;
-        r_PC_plus4    <= r_PC_plus4;
-        r_Valid  <= r_Valid;
-      elsif Flush = '1' or valid_in = '0'or Jump = '1' then
-        -- inject bubble (NOPs)
-        r_Instr1 <= (others => '0');
-        r_Instr2 <= (others => '0');
-        r_PC     <= (others => '0');
-        r_PC_plus4    <= (others => '0');
-		  r_Valid  <= '0';
-      else
-        -- normal 
-        r_Instr1 <= Instr1_in;
-        r_Instr2 <= Instr2_in;
-        r_PC     <= PC_in;
-        r_PC_plus4    <= PC_plus4_in;
-        r_Valid  <= Valid_in;
-      end if;
+    return resize(input, size);
+  end function;
+begin
+  process(instruction, PC_in, valid_in)
+  begin
+    if valid_in = '1' then
+      opcode  <= instruction(6 downto 0);
+      rd      <= instruction(11 downto 7);
+      funct3  <= instruction(14 downto 12);
+      rs1     <= instruction(19 downto 15);
+      rs2     <= instruction(24 downto 20);
+      funct7  <= instruction(31 downto 25);
+  
+      imm_I <= std_logic_vector(signext(signed(instruction(31 downto 20)), 32));
+      imm_S <= std_logic_vector(signext(signed(instruction(31 downto 25) & instruction(11 downto 7)), 32));
+      imm_B <= std_logic_vector(signext(signed(instruction(31) & instruction(7) & instruction(30 downto 25) & instruction(11 downto 8) & '0'), 32));
+      imm_U <= instruction(31 downto 12) & (11 downto 0 => '0');
+      imm_J <= std_logic_vector(signext(signed(instruction(31) & instruction(19 downto 12) & instruction(20) & instruction(30 downto 21) & '0'), 32));
+  
+      shamt <= instruction(24 downto 20);
+      PC_out <= PC_in;
+    else
+      opcode  <= (others => '0');
+      rd      <= (others => '0');
+      funct3  <= (others => '0');
+      rs1     <= (others => '0');
+      rs2     <= (others => '0');
+      funct7  <= (others => '0');
+
+      imm_I   <= (others => '0');
+      imm_S   <= (others => '0');
+      imm_B   <= (others => '0');
+      imm_U   <= (others => '0');
+      imm_J   <= (others => '0');
+
+      shamt   <= (others => '0');
+      PC_out  <= (others => '0');
     end if;
+
+    valid_out <= valid_in;
   end process;
-
-  -- drive outputs
-  Instr1_out <= r_Instr1;
-  Instr2_out <= r_Instr2;
-  PC_out     <= r_PC;
-  PC_plus4_out    <= r_PC_plus4;
-  Valid_out  <= r_Valid;
-
-end RTL;
+end Behavioral;
