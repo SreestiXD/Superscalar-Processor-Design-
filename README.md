@@ -13,6 +13,7 @@ This project aims at implementing my understanding of key processor architecture
 This repository contains a structural, dual-issue, in-order superscalar processor designed in VHDL, implementing the RV32I RISC-V ISA. The processor is built from the ground up using modular components and simulates pipelined execution from fetch to write-back.
 
 My Processor Design can be found here: [MyDesign.pdf](https://github.com/SreestiXD/Superscalar-Processor-Design-/blob/main/MyDesign.pdf)
+A video explanation of my design can be found here : [Video](https://drive.google.com/file/d/1tI-WKLwZLbh0TnXV2Cg0qMGcl2rOY14y/view?usp=sharing)
 
 ---
 
